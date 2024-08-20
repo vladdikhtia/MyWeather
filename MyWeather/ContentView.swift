@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var vm = WeatherViewModel()
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -16,6 +18,9 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
+        .onAppear{
+            vm.fetchData(latitude: 50.4504, longitude: 30.5245)
+        }
     }
 }
 
