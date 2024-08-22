@@ -55,7 +55,7 @@ struct WeatherModel: Decodable {
     }
 
     struct CloudsInfo: Decodable {
-        let all: Int
+        let all: Int?
     }
 
     struct Sys: Decodable {

@@ -38,9 +38,9 @@ class WeatherViewModel: ObservableObject {
                 case .failure(let error):
                     print("Error occurred: \(error)")
                 }
-            } receiveValue: { returnedData in
+            } receiveValue: { [weak self]returnedData in
                 print("Received data: \(returnedData)")
-                self.weather = returnedData
+                self?.weather = returnedData
             }
             .store(in: &cancellables)
     }

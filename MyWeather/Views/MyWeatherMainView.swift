@@ -9,12 +9,15 @@ import SwiftUI
 import CoreLocation
 
 
-struct MyWeatherView: View {
+struct MyWeatherMainView: View {
     @StateObject private var viewModel = WeatherViewModel()
     @State private var isSearching = false
     @State private var searchQuery = ""
     @State var latitude: Double = 50.4504
     @State var longitude: Double = 30.5245
+   
+    @Binding var lat: Double?
+    @Binding var lon: Double?
     
     let columns = [
         GridItem(.flexible(), spacing: 10),
@@ -144,15 +147,23 @@ struct MyWeatherView: View {
                 
             }            
             .toolbar(content: {
-                NavigationLink {
-                    SearchView(lat: $latitude, lon: $longitude)
-                } label: {
-                    Label("Search", systemImage: "magnifyingglass")
+//                NavigationLink {
+//                    SearchView(lat: $lat, lon: $lon)
+//                } label: {
+//                    Label("Search", systemImage: "magnifyingglass")
+//                    
+//                }
+                Button(action: {
                     
-                }
+                }, label: {
+                    Text("Add")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .fontWeight(.bold)
+                })
             })
             .onAppear{
-                viewModel.fetchData(latitude: latitude, longitude: longitude)
+                viewModel.fetchData(latitude: lat ?? 0, longitude: lon ?? 0)
             }
         }
     }
@@ -160,7 +171,7 @@ struct MyWeatherView: View {
 }
 
 #Preview {
-    MyWeatherView()
+    MyWeatherMainView(lat: .constant(20.01), lon: .constant(43.01))
 }
 
 //struct SearchView: View {
