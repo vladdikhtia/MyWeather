@@ -11,18 +11,16 @@ import CoreLocation
 
 struct MyWeatherMainView: View {
     @StateObject private var viewModel = WeatherViewModel()
-    @State private var isSearching = false
-    @State private var searchQuery = ""
-    @State var latitude: Double = 50.4504
-    @State var longitude: Double = 30.5245
-   
+    
     @Binding var lat: Double?
     @Binding var lon: Double?
+    @Binding var isPresented: Bool
     
     let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
     ]
+    
     var body: some View {
         NavigationStack{
             ZStack {
@@ -30,137 +28,106 @@ struct MyWeatherMainView: View {
                     .ignoresSafeArea()
                 
                 if let data = viewModel.weather {
-                    ScrollView{
-                        VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        
+                        Text(data.name)
+                            .font(.system(size: 36, weight: .semibold, design: .serif))
+                            .foregroundColor(.white)
+                        
+                        Divider()
+                            .frame(minHeight: 2)
+                            .background(Color.white)
+                        
+                        Text("\(data.weather[0].description.capitalized)")
+                            .font(.system(size: 24, weight: .semibold, design: .serif))
+                            .foregroundColor(.white)
+                        
+                        HStack(alignment: .top, spacing: 30) {
                             
-                            Text(data.name)
-                                .font(.system(size: 36, weight: .semibold, design: .serif))
+                            Image(systemName: getWeatherIcon(for: data.weather[0].main.lowercased()))
+                                .font(.system(size: 50))
                                 .foregroundColor(.white)
+                                .offset(x: 45, y: 15)
+                            if data.weather[0].main.lowercased().contains("rain") {
+                                ZStack {
+                                    ForEach(0..<20) { index in
+                                        RaindropAnimation()
+                                            .offset(x: CGFloat.random(in: -UIScreen.main.bounds.width/2...UIScreen.main.bounds.width/2))
+                                    }
+                                }
+                            }
                             
-                            Divider()
-                                .frame(minHeight: 2)
-                                .background(Color.white)
-                            
-                            Text("\(data.weather[0].description.capitalized)")
-                                .font(.system(size: 24, weight: .semibold, design: .serif))
+                            Text("\(data.main.temp.rounded().formatted())°")
+                                .font(.system(size: 50, weight: .bold))
                                 .foregroundColor(.white)
+                                .padding(.leading, 10)
+                                .offset(x: 45, y: 10)
                             
-                            HStack(alignment: .top, spacing: 30) {
-                                Image(systemName: "sun.max.fill")
-                                    .font(.system(size: 50))
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("/ Real Feel")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white.opacity(0.8))
+                                
+                                Text("\(data.main.feels_like.rounded().formatted())°")
+                                    .font(.system(size: 24, weight: .semibold))
                                     .foregroundColor(.white)
-                                    .offset(x: 45, y: 15)
-                                
-                                Text("\(data.main.temp.rounded().formatted())°")
-                                    .font(.system(size: 50, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .padding(.leading, 10)
-                                    .offset(x: 45, y: 10)
-                                
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text("/ Real Feel")
-                                        .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.8))
-                                    
-                                    Text("\(data.main.feels_like.rounded().formatted())°")
-                                        .font(.system(size: 24, weight: .semibold))
-                                        .foregroundColor(.white)
-                                }
-                                .offset(x: -45, y: 75)
                             }
-                            .padding(.bottom, 30)
-                            
-                            Text("Details:")
-                                .font(.system(size: 24, weight: .semibold, design: .serif))
-                                .foregroundColor(.white.opacity(0.8))
-                                .padding(.top, 10)
-                            
-                            Divider()
-                                .frame(minHeight: 1)
-                                .background(Color.white.opacity(0.7))
-                            
-                            
-                            VStack(alignment: .leading, spacing: 20) {
-                                HStack{
-                                    Image(systemName: "wind")
-                                    Text("Wind".uppercased())
-                                        .font(.system(size: 16, weight: .medium))
-                                    
-                                    Spacer()
-                                }
-                                .foregroundStyle(.white.opacity(0.7))
-                                
-                                
-                                VStack(alignment: .leading){
-                                    HStack(spacing: 5){
-                                        Text("\(data.wind.speed.rounded().formatted())")
-                                            .font(.system(size: 32, weight: .semibold))
-                                        VStack(alignment: .leading){
-                                            Text("M/S")
-                                                .foregroundStyle(.thinMaterial)
-                                                .font(.system(size: 14, weight: .medium))
-                                            Text("Wind")
-                                                .font(.system(size: 14, weight: .medium))
-                                        }
-                                    }
-                                    
-                                    Divider()
-                                    
-                                    HStack(spacing: 5){
-                                        Text(" \(data.wind.gust?.rounded().formatted() ?? "")")
-                                            .font(.system(size: 32, weight: .semibold))
-                                        VStack(alignment: .leading){
-                                            Text("M/S")
-                                                .foregroundStyle(.thinMaterial)
-                                                .font(.system(size: 14, weight: .medium))
-                                            Text("Gusts")
-                                                .font(.system(size: 14, weight: .medium))
-                                        }
-                                    }
-                                    
-                                }
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .lineLimit(1)
-                                
-                            }
-                            .frame(height: 140)
-                            .frame(maxWidth: .infinity)
+                            .offset(x: -45, y: 75)
+                        }
+                        .padding(.bottom, 30)
+                        
+                        Text("Details:")
+                            .font(.system(size: 24, weight: .semibold, design: .serif))
+                            .foregroundColor(.white.opacity(0.8))
+                            .padding(.top, 10)
+                        
+                        Divider()
+                            .frame(minHeight: 1)
+                            .background(Color.white.opacity(0.7))
+                        
+                        WindView(wind: data.wind.speed, gust: data.wind.gust)
+                            .frame(maxHeight: 100)
                             .padding()
                             .background(.thinMaterial.opacity(0.4))
                             .clipShape(.rect(cornerRadius: 20))
-                            
-                            LazyVGrid(columns: columns, spacing: 10) {
-                                MyWeatherDetail(imageName: "mountain.2.fill", title: "ground", description: "", value: "\(data.main.grnd_level ?? 0) m")
-                                MyWeatherDetail(imageName: "humidity.fill", title: "humidity", description: "", value: "\(data.main.humidity) %")
-                                MyWeatherDetail(imageName: "thermometer.medium", title: "Feels Like", description: "", value: "\(data.main.feels_like.rounded().formatted())°")
-                                MyWeatherDetail(imageName: "digitalcrown.press.fill", title: "pressure", description: "", value: "\(data.main.pressure) hPa")
-                            }
-                            .frame(maxWidth: .infinity)
-                            
-                            Spacer()
+                        
+                        LazyVGrid(columns: columns, spacing: 10) {
+                            MyWeatherDetail(imageName: "thermometer.medium", title: "Feels Like", description: "", value: "\(data.main.feels_like.rounded().formatted())°")
+                            MyWeatherDetail(imageName: "humidity.fill", title: "humidity", description: "", value: "\(data.main.humidity) %")
+                            MyWeatherDetail(imageName: "mountain.2.fill", title: "ground", description: "", value: "\(data.main.grnd_level ?? 0) m")
+                            MyWeatherDetail(imageName: "gauge.with.dots.needle.bottom.50percent", title: "pressure", description: "", value: "\(data.main.pressure) hPa")
                         }
-                        .padding()
+                        
+                        // add data provided by ....
                         
                     }
+                    .padding()
                 }
                 
-            }            
+            }
             .toolbar(content: {
-//                NavigationLink {
-//                    SearchView(lat: $lat, lon: $lon)
-//                } label: {
-//                    Label("Search", systemImage: "magnifyingglass")
-//                    
-//                }
-                Button(action: {
-                    
-                }, label: {
-                    Text("Add")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .fontWeight(.bold)
-                })
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(role: .cancel) {
+                        // TODO: go to home screen(cities)
+                        isPresented = false
+                    } label: {
+                        Label("Cancel", systemImage: "xmark.circle")
+                            .labelStyle(.titleOnly)
+                    }
+                    .tint(.white)
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(role: .destructive) {
+                        // TODO: add to collection
+                    } label: {
+                        Label("Add", systemImage: "plus.circle")
+                            .labelStyle(.titleOnly)
+                    }
+                    .tint(.white)
+                    .fontWeight(.bold)
+                }
+                
             })
             .onAppear{
                 viewModel.fetchData(latitude: lat ?? 0, longitude: lon ?? 0)
@@ -168,40 +135,28 @@ struct MyWeatherMainView: View {
         }
     }
     
+    private func getWeatherIcon(for condition: String) -> String {
+        switch condition {
+        case _ where condition.contains("sun"):
+            return "sun.max.fill"
+        case _ where condition.contains("clouds"):
+            return "cloud.fill"
+        case _ where condition.contains("rain"):
+            return "cloud.rain.fill"
+        case _ where condition.contains("snow"):
+            return "cloud.snow.fill"
+        default:
+            return "sun.max.fill"
+        }
+    }
+    
 }
+
 
 #Preview {
-    MyWeatherMainView(lat: .constant(20.01), lon: .constant(43.01))
+    MyWeatherMainView(lat: .constant(20.01), lon: .constant(43.01), isPresented: .constant(true))
 }
 
-//struct SearchView: View {
-//    @Binding var searchQuery: String
-//    var onSearch: () -> Void
-//
-//    var body: some View {
-//        VStack {
-//            HStack {
-//                TextField("Search location...", text: $searchQuery)
-//                    .textFieldStyle(RoundedBorderTextFieldStyle())
-//                    .padding()
-//
-//                Button("Search") {
-//                    onSearch()
-//                }
-//                .padding()
-//                .background(Color.blue)
-//                .foregroundColor(.white)
-//                .cornerRadius(8)
-//            }
-//            .background(Color.white.opacity(0.9))
-//            .clipShape(RoundedRectangle(cornerRadius: 10))
-//            .shadow(radius: 10)
-//
-//            Spacer()
-//        }
-//        .padding()
-//    }
-//}
 
 
 
