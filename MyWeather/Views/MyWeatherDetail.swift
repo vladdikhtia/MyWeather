@@ -39,7 +39,7 @@ struct MyWeatherDetail: View {
             .lineLimit(1)
 
         }
-        .frame(height: 120)
+        .frame(height: 100)
         .frame(maxWidth: .infinity)
         .padding()
         .background(.thinMaterial.opacity(0.4))

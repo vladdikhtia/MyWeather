@@ -14,37 +14,49 @@ struct SearchView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
-    @Binding var lat: Double
-    @Binding var lon: Double
+    @Binding var lat: Double?
+    @Binding var lon: Double?
+    @State private var isPresented = false
     
     var body: some View {
-        VStack {
-            TextField("Enter location", text: $locationName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+        VStack{
+            TextField("Search for a city", text: $locationName)
                 .padding()
-            
-            Button("Get Coordinates") {
-                fetchCoordinates(for: locationName)
+                .frame(maxWidth: .infinity)
+                .frame(height: 58)
+                .background(.primary.opacity(0.4))
+                .clipShape(.rect(cornerRadius: 12))
+                .padding()
+                .onSubmit {
+                    fetchCoordinates(for: locationName)
+                }
+
+            Button {
+                isPresented = true
+            } label: {
+                Text("Get weather")
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 58)
+                    .foregroundStyle(.white)
+                    .background(.green.opacity(0.7))
+                    .clipShape(.rect(cornerRadius: 12))
+                    .padding()
             }
-            .padding()
             .disabled(isLoading)
             
             if isLoading {
                 ProgressView()
             }
             
-            if let coordinates = coordinates {
-                Text("Latitude: \(coordinates.latitude)")
-                Text("Longitude: \(coordinates.longitude)")
-            } else if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-            }
+            Spacer()
         }
-        .padding()
+        .sheet(isPresented: $isPresented){
+            MyWeatherMainView(lat: $lat, lon: $lon, isPresented: $isPresented)
+        }
     }
     
-    func fetchCoordinates(for locationName: String) {
+    private func fetchCoordinates(for locationName: String) {
         isLoading = true
         errorMessage = nil
         
@@ -54,6 +66,7 @@ struct SearchView: View {
             
             if let error = error {
                 errorMessage = "Error: \(error.localizedDescription)"
+                print("\(errorMessage?.description ?? "error")")
                 return
             }
             
@@ -63,6 +76,7 @@ struct SearchView: View {
                 self.lon = coordinates?.longitude ?? 0
             } else {
                 errorMessage = "No coordinates found"
+                print("\(errorMessage?.description ?? "error")")
             }
         }
     }
@@ -70,5 +84,8 @@ struct SearchView: View {
 
 
 #Preview {
-    SearchView(lat: .constant(213.2), lon: .constant(32.2))
+    NavigationStack{
+        SearchView(lat: .constant(213.2), lon: .constant(32.2))
+    }
+    
 }
