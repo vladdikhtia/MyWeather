@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct MyWeatherApp: App {
     var body: some Scene {
         WindowGroup {
-//            MyWeatherView(lat: <#Binding<Double>#>, lon: <#Binding<Double>#>)
             HomeCitiesView()
+                .modelContainer(for: CityModel.self)
         }
     }
 }

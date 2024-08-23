@@ -7,8 +7,13 @@
 
 import SwiftUI
 import CoreLocation
+import SwiftData
 
 struct HomeCitiesView: View {
+    @Query var cities: [CityModel]
+    @Environment(\.modelContext) var modelContext
+
+    
     @State private var coordinates: CLLocationCoordinate2D?
     @State private var locationName = ""
     @State private var isLoading = false
