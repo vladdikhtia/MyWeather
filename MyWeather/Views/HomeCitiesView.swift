@@ -24,18 +24,13 @@ struct HomeCitiesView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                ForEach(0 ..< 15) { item in
-                    VStack{
-                        Text("\(item)")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(.yellow)
-                    .clipShape(.rect(cornerRadius: 12))
-                    .padding()
+            List{
+                ForEach(cities){ city in
+                  CityView(city: city)
                 }
+                .onDelete(perform: deleteCity)
             }
+            .listStyle(.plain)
 //            .searchable(text: $search, prompt: "Search for a city")
             .toolbar{
                 NavigationLink {
@@ -47,6 +42,23 @@ struct HomeCitiesView: View {
             }
             .navigationTitle("MyWeather")
             .preferredColorScheme(.dark)
+        }
+    }
+    
+    func addSamples() {
+        let rome = CityModel(name: "Rome", longitude: 21.54, latitude: 43.32)
+        let florence = CityModel(name: "Florence", longitude: 21.54, latitude: 43.32)
+        let milano = CityModel(name: "Milano", longitude: 21.54, latitude: 43.32)
+        
+        modelContext.insert(rome)
+        modelContext.insert(florence)
+        modelContext.insert(milano)
+    }
+    
+    func deleteCity(_ indexSet: IndexSet) {
+        for index in indexSet {
+            let city = cities[index]
+            modelContext.delete(city)
         }
     }
 }
