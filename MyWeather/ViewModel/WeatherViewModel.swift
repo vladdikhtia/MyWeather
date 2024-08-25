@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-@MainActor
+
 final class WeatherViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
@@ -23,7 +23,8 @@ final class WeatherViewModel: ObservableObject {
         self.storageManager = storageManager
         fetchCitiesFromDB()
     }
-        
+    
+    // network
     func fetchWeather(latitude: Double, longitude: Double) {
         networkManager.fetchWeatherData(latitude: latitude, longitude: longitude)
             .receive(on: DispatchQueue.main)
@@ -41,6 +42,7 @@ final class WeatherViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    // database
     func addCityToDB(cityName: String, cityLongitude: Double, cityLatitude: Double){
         storageManager.addCity(name: cityName, longitude: cityLongitude, latitude: cityLatitude)
         fetchCitiesFromDB()

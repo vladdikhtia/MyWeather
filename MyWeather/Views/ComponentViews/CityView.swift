@@ -62,7 +62,7 @@ struct CityView: View {
     }
     
     func startTimer() {
-        Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+        Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { _ in
             updateTime()
         }
     }
