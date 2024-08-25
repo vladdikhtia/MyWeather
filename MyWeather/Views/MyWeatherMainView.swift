@@ -7,15 +7,19 @@
 
 import SwiftUI
 import CoreLocation
+import SwiftData
+
 
 
 struct MyWeatherMainView: View {
-    @StateObject private var viewModel = WeatherViewModel()
-    
+    @ObservedObject var viewModel: WeatherViewModel
+
+    @Binding var navigationPath: NavigationPath
     @Binding var lat: Double?
     @Binding var lon: Double?
     @Binding var isPresented: Bool
-    
+    @State private var cityName: String? = nil
+
     let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -102,39 +106,47 @@ struct MyWeatherMainView: View {
                         
                     }
                     .padding()
+                    .toolbar(content: {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button(role: .cancel) {
+                                isPresented = false
+                            } label: {
+                                Label("Cancel", systemImage: "xmark.circle")
+                                    .labelStyle(.titleOnly)
+                            }
+                            .tint(.white)
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button(role: .destructive) {
+                                if viewModel.cities.contains(where: { $0.name == data.name } ) {
+                                    print("You already have this in your collection!")
+                                } else {
+                                    viewModel.addCityToDB(cityName: data.name, cityLongitude: data.coord.lon , cityLatitude: data.coord.lat)
+                                    print("City successfully added to DB!")
+                                }
+                               
+                                // go to HomeCitiesScreen
+                                navigationPath.removeLast(navigationPath.count)
+
+                            } label: {
+                                Label("Add", systemImage: "plus.circle")
+                                    .labelStyle(.titleOnly)
+                            }
+                            .tint(.white)
+                            .fontWeight(.bold)
+                        }
+                    })
+                } else {
+                    ProgressView()
                 }
                 
             }
-            .toolbar(content: {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(role: .cancel) {
-                        // TODO: go to home screen(cities)
-                        isPresented = false
-                    } label: {
-                        Label("Cancel", systemImage: "xmark.circle")
-                            .labelStyle(.titleOnly)
-                    }
-                    .tint(.white)
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(role: .destructive) {
-                        // TODO: add to collection
-                    } label: {
-                        Label("Add", systemImage: "plus.circle")
-                            .labelStyle(.titleOnly)
-                    }
-                    .tint(.white)
-                    .fontWeight(.bold)
-                }
-                
-            })
             .onAppear{
-                viewModel.fetchData(latitude: lat ?? 0, longitude: lon ?? 0)
+                viewModel.fetchWeather(latitude: lat ?? 0, longitude: lon ?? 0)
             }
         }
     }
-    
     private func getWeatherIcon(for condition: String) -> String {
         switch condition {
         case _ where condition.contains("sun"):
@@ -149,13 +161,13 @@ struct MyWeatherMainView: View {
             return "sun.max.fill"
         }
     }
-    
 }
 
 
-#Preview {
-    MyWeatherMainView(lat: .constant(20.01), lon: .constant(43.01), isPresented: .constant(true))
-}
+//#Preview {
+//    let container = ModelContainer(for: CityModel.self)
+//    MyWeatherMainView(viewModel: WeatherViewModel(networkManager: NetworkServiceManager(), storageManager: StorageServiceManager(modelContext: container.mainContext)), lat: .constant(20.01), lon: .constant(43.01), isPresented: .constant(true))
+//}
 
 
 
