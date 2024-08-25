@@ -10,10 +10,14 @@ import CoreLocation
 import SwiftData
 
 struct HomeCitiesView: View {
-    @Query var cities: [CityModel]
-    @Environment(\.modelContext) var modelContext
+    @StateObject private var viewModel: WeatherViewModel
+    @State private var navigationPath = NavigationPath()
 
     
+    init(networkManager: WeatherNetworkProtocol, storageManager: StorageProtocol){
+        _viewModel = StateObject(wrappedValue: WeatherViewModel(networkManager: networkManager, storageManager: storageManager))
+    }
+ 
     @State private var coordinates: CLLocationCoordinate2D?
     @State private var locationName = ""
     @State private var isLoading = false
@@ -23,21 +27,24 @@ struct HomeCitiesView: View {
     @State var lon: Double? = nil
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             List{
-                ForEach(cities){ city in
-                  CityView(city: city)
+                ForEach(viewModel.cities){ city in
+                    CityView(city: city)
                 }
-                .onDelete(perform: deleteCity)
+                .onDelete(perform: viewModel.deleteCityFromDB)
             }
             .listStyle(.plain)
-//            .searchable(text: $search, prompt: "Search for a city")
+            // .searchable(text: $search, prompt: "Search for a city")
             .toolbar{
-                NavigationLink {
-                   SearchView(lat: $lat, lon: $lon)
-                } label: {
+                NavigationLink(value: "search") {
                     Label("Add city", systemImage: "plus")
                         .buttonRepeatBehavior(.disabled)
+                }
+                .navigationDestination(for: String.self) { value in
+                    if value == "search" {
+                        SearchView(viewModel: viewModel, navigationPath: $navigationPath, lat: $lat, lon: $lon)
+                    }
                 }
             }
             .navigationTitle("MyWeather")
@@ -45,24 +52,10 @@ struct HomeCitiesView: View {
         }
     }
     
-    func addSamples() {
-        let rome = CityModel(name: "Rome", longitude: 21.54, latitude: 43.32)
-        let florence = CityModel(name: "Florence", longitude: 21.54, latitude: 43.32)
-        let milano = CityModel(name: "Milano", longitude: 21.54, latitude: 43.32)
-        
-        modelContext.insert(rome)
-        modelContext.insert(florence)
-        modelContext.insert(milano)
-    }
     
-    func deleteCity(_ indexSet: IndexSet) {
-        for index in indexSet {
-            let city = cities[index]
-            modelContext.delete(city)
-        }
-    }
 }
 
-#Preview {
-    HomeCitiesView()
-}
+//#Preview {
+//    let container = ModelContainer()
+//    HomeCitiesView(networkManager: NetworkServiceManager(), storageManager: StorageServiceManager(modelContext: container.mainContext))
+//}

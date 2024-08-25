@@ -9,6 +9,9 @@ import SwiftUI
 import CoreLocation
 
 struct SearchView: View {
+    @ObservedObject var viewModel: WeatherViewModel
+    @Binding var navigationPath: NavigationPath
+
     @State private var coordinates: CLLocationCoordinate2D?
     @State private var locationName = ""
     @State private var isLoading = false
@@ -52,7 +55,7 @@ struct SearchView: View {
             Spacer()
         }
         .sheet(isPresented: $isPresented){
-            MyWeatherMainView(lat: $lat, lon: $lon, isPresented: $isPresented)
+            MyWeatherMainView(viewModel: viewModel, navigationPath: $navigationPath, lat: $lat, lon: $lon, isPresented: $isPresented)
         }
     }
     
@@ -83,9 +86,8 @@ struct SearchView: View {
 }
 
 
-#Preview {
-    NavigationStack{
-        SearchView(lat: .constant(213.2), lon: .constant(32.2))
-    }
-    
-}
+//#Preview {
+//    NavigationStack{
+//        SearchView(viewModel: WeatherViewModel(networkManager: NetworkServiceManager(), storageManager: StorageServiceManager(modelContext: <#T##ModelContext#>)), lat: .constant(213.2), lon: .constant(32.2))
+//    }
+//}
