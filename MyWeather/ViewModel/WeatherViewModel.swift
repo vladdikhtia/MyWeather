@@ -1,51 +1,59 @@
+//
+//  CombinedViewModel.swift
+//  MyWeather
+//
+//  Created by Vladyslav Dikhtiaruk on 25/08/2024.
+//
+
 import Foundation
 import Combine
-class WeatherViewModel: ObservableObject {
+
+@MainActor
+final class WeatherViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     @Published var weather: WeatherModel? = nil
+    @Published var cities = [CityModel]()
     
-    private let baseURL = "https://api.openweathermap.org/data/2.5/weather"
+    private let networkManager: WeatherNetworkProtocol
+    private let storageManager: StorageProtocol
     
-    func fetchData(latitude: Double, longitude: Double) {
-        guard var urlComponents = URLComponents(string: baseURL) else { return }
-        urlComponents.queryItems = [
-            URLQueryItem(name: "lat", value: String(latitude)),
-            URLQueryItem(name: "lon", value: String(longitude)),
-            URLQueryItem(name: "appid", value: apiKey),
-            URLQueryItem(name: "units", value: "metric")
-        ]
+    init(networkManager: WeatherNetworkProtocol, storageManager: StorageProtocol) {
+        self.networkManager = networkManager
+        self.storageManager = storageManager
+        fetchCitiesFromDB()
+    }
         
-        guard let url = urlComponents.url else { return }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        URLSession.shared.dataTaskPublisher(for: request)
+    func fetchWeather(latitude: Double, longitude: Double) {
+        networkManager.fetchWeatherData(latitude: latitude, longitude: longitude)
             .receive(on: DispatchQueue.main)
-            .tryMap { data, response -> Data in
-                guard let httpResponse = response as? HTTPURLResponse,
-                      httpResponse.statusCode == 200 else {
-                    throw URLError(.badServerResponse)
-                }
-                return data
-            }
-            .decode(type: WeatherModel.self, decoder: JSONDecoder())
             .sink { completion in
                 switch completion {
                 case .finished:
-                    print("Request completed")
+                    print("Weather request completed")
                 case .failure(let error):
                     print("Error occurred: \(error)")
                 }
-            } receiveValue: { [weak self]returnedData in
-                print("Received data: \(returnedData)")
-                self?.weather = returnedData
+            } receiveValue: { [weak self] returnedWeather in
+                print("Received weather data: \(returnedWeather)")
+                self?.weather = returnedWeather
             }
             .store(in: &cancellables)
     }
     
+    func addCityToDB(cityName: String, cityLongitude: Double, cityLatitude: Double){
+        storageManager.addCity(name: cityName, longitude: cityLongitude, latitude: cityLatitude)
+        fetchCitiesFromDB()
+    }
     
+    func fetchCitiesFromDB() {
+        self.cities = storageManager.fetchCitiesFromDB()
+    }
+    
+    func deleteCityFromDB(_ indexSet: IndexSet) {
+        storageManager.deleteCity(at: indexSet)
+        fetchCitiesFromDB()
+    }
     
     
 }
