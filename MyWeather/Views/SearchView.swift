@@ -55,7 +55,12 @@ struct SearchView: View {
             Spacer()
         }
         .sheet(isPresented: $isPresented){
-            MyWeatherMainView(viewModel: viewModel, navigationPath: $navigationPath, lat: $lat, lon: $lon, isPresented: $isPresented)
+            MyWeatherMainView(
+                viewModel: viewModel,
+                navigationPath: $navigationPath,
+                lat: $lat,
+                lon: $lon
+            )
         }
     }
     
@@ -77,6 +82,7 @@ struct SearchView: View {
                 coordinates = location.coordinate
                 self.lat = coordinates?.latitude ?? 0
                 self.lon = coordinates?.longitude ?? 0
+                print("Fetched coordinates!")
             } else {
                 errorMessage = "No coordinates found"
                 print("\(errorMessage?.description ?? "error")")
@@ -86,8 +92,9 @@ struct SearchView: View {
 }
 
 
-//#Preview {
-//    NavigationStack{
-//        SearchView(viewModel: WeatherViewModel(networkManager: NetworkServiceManager(), storageManager: StorageServiceManager(modelContext: <#T##ModelContext#>)), lat: .constant(213.2), lon: .constant(32.2))
-//    }
-//}
+#Preview {
+    NavigationStack{
+        SearchView(viewModel: WeatherViewModel(networkManager: MockNetworkManager(), storageManager: MockStorageManager()), navigationPath: .constant(NavigationPath()), lat: .constant(50.012), lon: .constant(30.43))
+    }
+    .preferredColorScheme(.dark)
+}

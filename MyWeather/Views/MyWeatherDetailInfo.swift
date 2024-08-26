@@ -48,5 +48,10 @@ struct MyWeatherDetailInfo: View {
 }
 
 #Preview {
-    MyWeatherDetailInfo(imageName: "eye.fill", title: "Visibility", description: "Perfectly clear view.", value: "27")
+    MyWeatherDetailInfo(
+        imageName: "eye.fill",
+        title: "Visibility",
+        description: "Perfectly clear view.",
+        value: "27"
+    )
 }

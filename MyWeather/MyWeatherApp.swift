@@ -12,8 +12,8 @@ import SwiftData
 @main
 struct MyWeatherApp: App {
     let container: ModelContainer
-    let networkManager: NetworkServiceManager
-    let storageManager: StorageServiceManager
+    let networkManager: NetworkManager
+    let storageManager: StorageManager
     
 
     var body: some Scene {
@@ -26,8 +26,8 @@ struct MyWeatherApp: App {
     init() {
             do {
                 container = try ModelContainer(for: CityModel.self)
-                networkManager = NetworkServiceManager()
-                storageManager = StorageServiceManager(modelContext: container.mainContext)
+                networkManager = NetworkManager()
+                storageManager = StorageManager(modelContext: container.mainContext)
             } catch {
                 fatalError("Failed to create ModelContainer for CityModel. \(error.localizedDescription)")
             }

@@ -12,12 +12,12 @@ import SwiftData
 struct HomeCitiesView: View {
     @StateObject private var viewModel: WeatherViewModel
     @State private var navigationPath = NavigationPath()
-
     
-    init(networkManager: WeatherNetworkProtocol, storageManager: StorageProtocol){
+    
+    init(networkManager: NetworkProtocol, storageManager: StorageProtocol){
         _viewModel = StateObject(wrappedValue: WeatherViewModel(networkManager: networkManager, storageManager: storageManager))
     }
- 
+    
     @State private var coordinates: CLLocationCoordinate2D?
     @State private var locationName = ""
     @State private var isLoading = false
@@ -30,20 +30,40 @@ struct HomeCitiesView: View {
         NavigationStack(path: $navigationPath) {
             List{
                 ForEach(viewModel.cities){ city in
-                    CityView(city: city)
+                    Button {
+                        navigationPath.append(city)
+                    } label: {
+                        CityView(city: city)
+                    }
                 }
                 .onDelete(perform: viewModel.deleteCityFromDB)
             }
+            .navigationDestination(for: CityModel.self) { city in
+                MyWeatherSearchedView(
+                    viewModel: viewModel,
+                    latitude: city.latitude,
+                    longitude: city.longitude,
+                    navigationPath: $navigationPath
+                )
+            }
             .listStyle(.plain)
-            // .searchable(text: $search, prompt: "Search for a city")
+            //            .searchable(text: $search, prompt: "Search for a city")
             .toolbar{
                 NavigationLink(value: "search") {
-                    Label("Add city", systemImage: "plus")
-                        .buttonRepeatBehavior(.disabled)
+                    Label(
+                        "Add city",
+                        systemImage: "plus"
+                    )
+                    .buttonRepeatBehavior(.disabled)
                 }
                 .navigationDestination(for: String.self) { value in
                     if value == "search" {
-                        SearchView(viewModel: viewModel, navigationPath: $navigationPath, lat: $lat, lon: $lon)
+                        SearchView(
+                            viewModel: viewModel,
+                            navigationPath: $navigationPath,
+                            lat: $lat,
+                            lon: $lon
+                        )
                     }
                 }
             }
@@ -51,11 +71,8 @@ struct HomeCitiesView: View {
             .preferredColorScheme(.dark)
         }
     }
-    
-    
 }
 
-//#Preview {
-//    let container = ModelContainer()
-//    HomeCitiesView(networkManager: NetworkServiceManager(), storageManager: StorageServiceManager(modelContext: container.mainContext))
-//}
+#Preview {
+    HomeCitiesView(networkManager: MockNetworkManager(), storageManager: MockStorageManager())
+}
