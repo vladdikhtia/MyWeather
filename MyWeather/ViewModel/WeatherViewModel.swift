@@ -15,10 +15,10 @@ final class WeatherViewModel: ObservableObject {
     @Published var weather: WeatherModel? = nil
     @Published var cities = [CityModel]()
     
-    private let networkManager: WeatherNetworkProtocol
+    private let networkManager: NetworkProtocol
     private let storageManager: StorageProtocol
     
-    init(networkManager: WeatherNetworkProtocol, storageManager: StorageProtocol) {
+    init(networkManager: NetworkProtocol, storageManager: StorageProtocol) {
         self.networkManager = networkManager
         self.storageManager = storageManager
         fetchCitiesFromDB()
@@ -44,7 +44,11 @@ final class WeatherViewModel: ObservableObject {
     
     // database
     func addCityToDB(cityName: String, cityLongitude: Double, cityLatitude: Double){
-        storageManager.addCity(name: cityName, longitude: cityLongitude, latitude: cityLatitude)
+        storageManager.addCity(
+            name: cityName,
+            longitude: cityLongitude,
+            latitude: cityLatitude
+        )
         fetchCitiesFromDB()
     }
     
